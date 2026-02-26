@@ -13,10 +13,8 @@ pipeline {
                 sh '''
                 docker network create app-network || true
                 docker rm -f backend1 backend2 || true
-                # Explicitly starting both containers on the shared network
                 docker run -d --name backend1 --network app-network backend-app
                 docker run -d --name backend2 --network app-network backend-app
-                # Wait for backends to register on the network
                 sleep 5
                 '''
             }
@@ -25,9 +23,7 @@ pipeline {
             steps {
                 sh '''
                 docker rm -f nginx-lb || true
-                # Start NGINX on the same network
                 docker run -d --name nginx-lb --network app-network -p 80:80 nginx
-                # Wait for NGINX to initialize its PID file
                 sleep 5
                 docker cp CC_LAB-6/nginx/default.conf nginx-lb:/etc/nginx/conf.d/default.conf
                 docker exec nginx-lb nginx -s reload
@@ -37,10 +33,10 @@ pipeline {
     }
     post {
         success {
-            echo 'Pipeline executed successfully. NGINX load balancer is running.' [cite: 1]
+            echo 'Pipeline executed successfully. NGINX load balancer is running.'
         }
         failure {
-            echo 'Pipeline failed. Check console logs for errors.' [cite: 1]
+            echo 'Pipeline failed. Check console logs for errors.'
         }
     }
 }
